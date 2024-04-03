@@ -1,0 +1,12 @@
+Presentation Layer (Client): This is where the end users interact with the model. It could be a web or mobile application that makes requests to a backend server to obtain predictions from the model.
+
+Logic Layer (Server):
+
+Elastic Load Balancer (ELB): Distributes incoming traffic among EC2 instances or ECS containers that host the model API.
+Amazon EC2 / Amazon ECS: You can host your API serving the model on EC2 (virtual server instances) or within containers managed by ECS. The API receives requests, processes them through the model, and returns the predictions.
+API Gateway: Facilitates the creation, publication, maintenance, monitoring, and protection of APIs at any scale. It can act as a gateway for API requests, providing an additional layer of abstraction.
+AWS Lambda: For lighter or event-based processing tasks, you could use Lambda functions, which scale automatically and are executed in response to events.
+Data Layer (Database):
+
+Amazon RDS / Amazon DynamoDB: Depending on whether you need a relational or NoSQL database, you could opt for RDS (for SQL) or DynamoDB (for NoSQL). Here, you can store the records of the predictions made, the input data, or any other relevant data.
+Amazon S3: To store trained models, datasets, or any other type of large files, S3 is a robust and scalable option.
