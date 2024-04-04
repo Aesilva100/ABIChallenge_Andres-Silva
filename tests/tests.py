@@ -1,8 +1,6 @@
-import unittest
-from main import model # Reemplaza esto con la importación de tu función de predicción real
-
+import unittest, joblib
 class TestModeloIris(unittest.TestCase):
-
+    model=joblib.load(".model/gaussian_nb_model.pkl")
     def test_prediccion_individual(self):
         # Supongamos que tu función de predicción espera una lista de características
         # Cambia los valores de prueba según tu modelo específico
