@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
-import sqlite3
+import sqlite3, os
 
 # Define the data model for input data for prediction
 class IrisModel(BaseModel):
@@ -23,9 +23,16 @@ except FileNotFoundError:
 except Exception as e:
     print(f"An error occurred while loading the model: {e}")
 
+# Define the path for the database
+database_path = os.path.join('data', 'predictions.db')
+
+# Create the data directory if it doesn't exist
+os.makedirs(os.path.dirname(database_path), exist_ok=True)
+
 # Create a connection to the SQLite database
-conn = sqlite3.connect('predictions.db', check_same_thread=False)
+conn = sqlite3.connect(database_path, check_same_thread=False)
 c = conn.cursor()
+
 # Create a table to store predictions if it doesn't exist
 c.execute('''CREATE TABLE IF NOT EXISTS predictions
              (sepal_length REAL, sepal_width REAL, petal_length REAL, petal_width REAL, prediction TEXT)''')
