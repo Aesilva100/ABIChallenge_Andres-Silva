@@ -13,16 +13,18 @@ class IrisModel(BaseModel):
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Load the Iris model
+# Load the Iris model and target names
 try:
-    model = joblib.load("model/pipeline_iris_svm_caesarmario.joblib")
+    model = joblib.load("model/gaussian_nb_model.pkl")
+    # Define the target names
+    target_names = ['setosa', 'versicolor', 'virginica']
 except FileNotFoundError:
     print("The model file was not found. Please check the path.")
 except Exception as e:
     print(f"An error occurred while loading the model: {e}")
 
 # Create a connection to the SQLite database
-conn = sqlite3.connect('predictions.db')
+conn = sqlite3.connect('predictions.db', check_same_thread=False)
 c = conn.cursor()
 # Create a table to store predictions if it doesn't exist
 c.execute('''CREATE TABLE IF NOT EXISTS predictions
@@ -34,11 +36,12 @@ conn.commit()
 async def predict(iris: IrisModel):
     try:
         data = [[iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width]]
-        prediction = model.predict(data)
+        prediction_index = model.predict(data)[0]
+        prediction_name = target_names[prediction_index]
         # Store the prediction in the database
-        c.execute("INSERT INTO predictions VALUES (?,?,?,?,?)", (iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width, str(prediction[0])))
+        c.execute("INSERT INTO predictions VALUES (?,?,?,?,?)", (iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width, prediction_name))
         conn.commit()
-        return {"prediction": str(prediction[0])}
+        return {"prediction": prediction_name}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred during prediction: {e}")
 
@@ -49,11 +52,13 @@ async def predict_batch(iris_list: list[IrisModel]):
         predictions = []
         for iris in iris_list:
             data = [[iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width]]
-            prediction = model.predict(data)
-            predictions.append(prediction[0])
+            prediction_index = model.predict(data)[0]
+            prediction_name = target_names[prediction_index]
+            predictions.append(prediction_name)
             # Store the prediction in the database
-            c.execute("INSERT INTO predictions VALUES (?,?,?,?,?)", (iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width, str(prediction[0])))
+            c.execute("INSERT INTO predictions VALUES (?,?,?,?,?)", (iris.sepal_length, iris.sepal_width, iris.petal_length, iris.petal_width, prediction_name))
             conn.commit()
         return {"predictions": predictions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred during batch prediction: {e}")
+
